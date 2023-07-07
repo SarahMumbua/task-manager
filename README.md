@@ -1,4 +1,5 @@
 ##README
+
 This is a README file that provides an overview and basic documentation for the codebase. It includes information about the project structure, database models, routes, and setup instructions.
 Project Structure
 The project has the following structure:
