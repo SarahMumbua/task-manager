@@ -46,12 +46,19 @@ The routes are implemented in routes.py using Flask's route decorators and utili
 #Setup Instructions
 
 To set up and run the application, follow these steps:
+
     1. Clone the repository to your local machine.
+    
     2. Install the required dependencies by running pip install -r requirements.txt.
+    
     3. Set up a PostgreSQL database and update the SQLALCHEMY_DATABASE_URI in app.py with your database connection details.
+    
     4. Set a JWT secret key in the JWT_SECRET_KEY field in config.py.
+    
     5. Apply the database migrations by running flask db upgrade in the project directory.
+    
     6. Start the Flask development server by running flask run.
+    
     7. The API will be accessible at http://localhost:5000/api.
     
 Make sure to adjust the database connection details and other configurations according to your specific environment.
