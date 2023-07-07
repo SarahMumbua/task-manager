@@ -1,5 +1,4 @@
 from flask import request, jsonify, Blueprint, current_app
-# from flask.globals import current_app
 from werkzeug.security import generate_password_hash,check_password_hash
 from flask_jwt_extended import jwt_required, get_jwt_identity, JWTManager
 from .models import User, Task,Category,db
@@ -8,7 +7,7 @@ from datetime import datetime, timedelta
 import os
 from app import app 
 route = Blueprint('user_routes', __name__)
-# /api/users/signup (POST): User sign up route
+
 @route.route('/api/users/signup', methods=['POST'])
 def signup():
     data = request.get_json()
@@ -32,10 +31,8 @@ def signup():
     db.session.commit()     
     return jsonify({'message':'User created successfully.', 'responseCode':200}),200      
 
-# /api/users/login (POST): User login route
 @route.route('/api/users/login', methods=['POST'])
 def login():
-    # Retrieve the username and password from the request body
     username = request.json.get('username')
     password = request.json.get('password')
     if not username or not password:
@@ -48,11 +45,10 @@ def login():
         return jsonify({'error': 'Invalid username or password.'}), 401
 
 def generate_token(user):
-    # secret_key = 'TRDXFGDFCXDGVGSGCFDFDCF'
     secret_key = current_app.config['JWT_SECRET_KEY']
     expiration = datetime.utcnow() + timedelta(days=1)
     payload = {
-        'sub': user.id,  # Set the subject claim with the user ID or appropriate identifier
+        'sub': user.id,
         'user_id': user.id,
         'username': user.username,
         'email': user.email
@@ -60,8 +56,7 @@ def generate_token(user):
 
     token = jwt.encode(payload, secret_key, algorithm='HS256')
     return token
-# /api/users/logout (POST): User logout route
-# /api/tasks (GET): Get all user's tasks
+
 @route.route('/api/tasks', methods=['GET'])
 @jwt_required()
 def get_user_tasks():
@@ -84,7 +79,6 @@ def get_user_tasks():
 
     return jsonify(response), 200
  
-# /api/tasks (POST): Create a new task
 @route.route('/api/tasks', methods=['POST'])
 @jwt_required() 
 def create_task():
@@ -102,7 +96,7 @@ def create_task():
     db.session.commit()
     return jsonify({'message': 'Task created successfully.','responseCode':200, 'task_id': new_task.id}), 201
 
-# /api/tasks/<task_id> (GET): Get details of a specific task
+
 @route.route('/api/tasks/<int:task_id>', methods=['GET','PUT','DELETE'])
 @jwt_required()
 def get_update_task(task_id):
@@ -141,38 +135,38 @@ def get_update_task(task_id):
             return jsonify({'message': 'Task deleted successfully.'}), 200
 
 @route.route('/api/tasks/<int:task_id>/complete', methods=['PATCH'])
-@jwt_required()  # Requires a valid JWT token in the request headers
+@jwt_required() 
 def mark_task_as_complete(task_id):
-    current_user_id = get_jwt_identity()  # Retrieve the current user's ID from the JWT token
-    user = User.query.get(current_user_id)  # Get the user object based on the ID
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
 
-    task = Task.query.filter_by(id=task_id, user_id=user.id).first()  # Retrieve the task based on the task ID and user ID
+    task = Task.query.filter_by(id=task_id, user_id=user.id).first()  
 
     if not task:
         return jsonify({'error': 'Task not found.'}), 404
 
-    # Mark the task as complete
     task.status = 'Complete'
     db.session.commit()
 
-    return jsonify({'message': 'Task marked as complete.'}), 200    
-@route.route('/api/tasks/<int:task_id>/incomplete', methods=['PATCH'])
-@jwt_required()  # Requires a valid JWT token in the request headers
-def mark_task_as_incomplete(task_id):
-    current_user_id = get_jwt_identity()  # Retrieve the current user's ID from the JWT token
-    user = User.query.get(current_user_id)  # Get the user object based on the ID
+    return jsonify({'message': 'Task marked as complete.'}), 200 
 
-    task = Task.query.filter_by(id=task_id, user_id=user.id).first()  # Retrieve the task based on the task ID and user ID
+@route.route('/api/tasks/<int:task_id>/incomplete', methods=['PATCH'])
+@jwt_required() 
+def mark_task_as_incomplete(task_id):
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+
+    task = Task.query.filter_by(id=task_id, user_id=user.id).first()
 
     if not task:
         return jsonify({'error': 'Task not found.'}), 404
 
-    # Mark the task as complete
+    
     task.status = 'Incomplete'
     db.session.commit()
 
-    return jsonify({'message': 'Task marked as incomplete.'}), 200   
-# /api/tasks/<task_id>/assign (POST): Assign a task to another user
+    return jsonify({'message': 'Task marked as incomplete.'}), 200  
+
 @route.route('/api/tasks/<int:task_id>/assign', methods=['POST'])
 @jwt_required()  
 def assign_task(task_id):
@@ -196,7 +190,7 @@ def assign_task(task_id):
     db.session.commit()
 
     return jsonify({'message': 'Task assigned successfully.'}), 200
-# /api/categories (GET): Get all categories
+
 @route.route('/api/categories', methods=['GET'])
 @jwt_required()  
 def get_categories():
@@ -206,7 +200,7 @@ def get_categories():
     for category in categories:
         category_names.append(category.name)
     return jsonify(category_names), 200
-# /api/categories (POST): Create a new category
+
 @route.route('/api/categories', methods=['POST'])
 def create_category():
     category_name = request.json.get('name')
